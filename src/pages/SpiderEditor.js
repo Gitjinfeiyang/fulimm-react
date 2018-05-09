@@ -27,6 +27,29 @@ const entry_param_type={
     object:1
 }
 
+//至少取5层选择器
+function getAbsoluteSelector(dom,start=0){
+    let mStart=start+1;
+    let selector=dom.tagName;
+    if(dom.className&&dom.className.length>0){
+        let classNames=dom.className.split(" ");
+        selector=dom.tagName;
+        for(let i=0; i<classNames.length;i++){
+            if(classNames[i].length>0){
+                selector+='.'+classNames[i];
+            }
+        }
+        if(mStart<5){
+            selector=getAbsoluteSelector(dom.parentElement,mStart)+">"+selector            
+        }
+    }else{
+        selector=getAbsoluteSelector(dom.parentElement,mStart)+">"+selector
+    }
+
+    return selector;
+}
+
+
 
 export default class SpiderEditor extends React.Component{
     pageContainer;
@@ -118,19 +141,9 @@ export default class SpiderEditor extends React.Component{
                 this.currentHighlightDomlist[i].className=this.currentHighlightDomlist[i].className.replace(" highlight","")
             }
         }
-        if(e.target.className&&e.target.className.length>0){
-            let classNames=e.target.className.split(" ");
-            selector=e.target.tagName;
-            for(let i=0; i<classNames.length;i++){
-                if(classNames[i].length>0){
-                    selector+='.'+classNames[i];
-                }
-            }
-            this.currentHighlightDomlist=this.pageContainer.querySelectorAll(selector);            
-        }else{
-            this.currentHighlightDomlist=this.pageContainer.querySelectorAll(e.target.tagName);
-            selector=e.target.tagName;            
-        }
+
+        selector=getAbsoluteSelector(e.target);
+        this.currentHighlightDomlist=this.pageContainer.querySelectorAll(selector);            
         for(let i=0; i<this.currentHighlightDomlist.length; i++){
             if(i == 0){
                 if(this.currentHighlightDomlist[i].href){
@@ -160,6 +173,15 @@ export default class SpiderEditor extends React.Component{
                     value:"html",
                     example:this.currentHighlightDomlist[i].innerHTML                   
                 })
+
+                let dataset=this.currentHighlightDomlist[i].dataset;
+                Object.keys(dataset).forEach((key) => {
+                    values.push({
+                        type:key,
+                        value:"dataset",
+                        example:dataset[key]                  
+                    })
+                })
                 
             }
             if(this.currentHighlightDomlist[i].className){
@@ -185,7 +207,7 @@ export default class SpiderEditor extends React.Component{
                 break;
             case entry_param_type.object:
                 this.setState(({taskEntry},props) => {
-                    taskEntry.params[0] = {name:"",value:{start:0,end:99,step:10}}
+                    taskEntry.params[0] = {name:"",value:{start:1,end:999,step:1}}
                 })
                 break;
         }
@@ -535,7 +557,7 @@ export default class SpiderEditor extends React.Component{
                             {this.state.editor.values.map((item,index) => {
                                 return(
                                     <MenuItem style={{width:"250px",overflow:"hidden"}} key={index} value={item.value} primaryText={item.type}>
-                                        {item.example}
+                                        <span className="example-text">{item.example}</span>
                                     </MenuItem>                                    
                                 )
                             })}
