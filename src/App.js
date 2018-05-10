@@ -68,10 +68,12 @@ class App extends Component {
             </Menu>
 
           </Drawer>
-          <div ref={(dom) => this.container=dom}></div>
+          <div className="route-content">
           <Route path="/home/spiderEditor" component={SpiderEditor}></Route>
           <Route path="/home/taskList" component={TaskList}></Route>
           <Route path="/home/taskDetail" component={TaskDetail}></Route>
+          </div>
+          
         </div>
     );
   }
